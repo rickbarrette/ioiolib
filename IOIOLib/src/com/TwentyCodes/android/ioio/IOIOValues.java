@@ -29,4 +29,10 @@ public class IOIOValues {
 	public static final int STAT_LED_PORT = 0 ;
 	
 	public static final int RC_PWM_FRQ = 50;
+	
+	public static final int RC_PWM_PULSE_WIDTH_MAX = 2000;
+	
+	public static final int RC_PWM_PULSE_WIDTH_MIN = 1000;
+	
+	public static final int RC_PWM_PULSE_WIDTH_NEUTRAL = 1500;
 }
