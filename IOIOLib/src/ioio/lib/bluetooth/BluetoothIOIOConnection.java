@@ -33,20 +33,20 @@ public class BluetoothIOIOConnection implements IOIOConnection {
 			if (disconnect_) {
 				throw new ConnectionLostException();
 			}
-			Log.e(TAG, name_ + " Creating socket");
+			Log.v(TAG, name_ + " Creating socket");
 			try {
 				socket_ = createSocket(ioioDevice);
 			} catch (IOException e) {
 				throw new ConnectionLostException(e);
 			}
-			Log.e(TAG, name_ + " Created socket");
+			Log.v(TAG, name_ + " Created socket");
 		}
 		// keep trying to connect as long as we're not aborting
 		while (true) {
 			try {
-				Log.e(TAG, name_ + "Connecting");
+				Log.v(TAG, name_ + "Connecting");
 				socket_.connect();
-				Log.e(TAG, "Established connection to device " + name_
+				Log.v(TAG, "Established connection to device " + name_
 						+ " address: " + address_);
 				break; // if we got here, we're connected
 			} catch (Exception e) {
