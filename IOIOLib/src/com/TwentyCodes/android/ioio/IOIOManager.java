@@ -50,49 +50,7 @@ public abstract class IOIOManager implements IOIOListener{
             thread.abort();  
         joinAllThreads();  
     }  
-  
-    /** 
-     * Joins all the threads 
-     * @throws InterruptedException 
-     * @author ricky barrette 
-     */  
-    private void joinAllThreads() throws InterruptedException {  
-        for (IOIOThread thread : mThreads)  
-            thread.join();  
-    }  
-  
-    /** 
-     * Creates all the required IOIO connectivity threads 
-     * @author ricky barrette 
-     */  
-    private void createAllThreads() {  
-        mThreads.clear();  
-        Collection<IOIOConnectionSpec> specs = getConnectionSpecs();  
-        for (IOIOConnectionSpec spec : specs)  
-            mThreads.add(new IOIOThread(spec.className, spec.args, this));  
-    }  
-  
-    /** 
-     * Starts IOIO connectivity threads 
-     * @author ricky barrette 
-     */  
-    public void start() {  
-        createAllThreads();  
-        for (IOIOThread thread : mThreads)  
-            thread.start();  
-    }  
-  
-    /** 
-     * @return 
-     * @author Ytai Ben-Tsvi 
-     */  
-    private Collection<IOIOConnectionSpec> getConnectionSpecs() {  
-        Collection<IOIOConnectionSpec> result = new LinkedList<IOIOConnectionSpec>();  
-        addConnectionSpecs(SocketIOIOConnectionDiscovery.class.getName(),result);  
-        addConnectionSpecs(BluetoothIOIOConnectionDiscovery.class.getName(), result);  
-        return result;  
-    }  
-  
+    
     /** 
      * @param discoveryClassName 
      * @param result 
@@ -108,6 +66,49 @@ public abstract class IOIOManager implements IOIOListener{
         } catch (Exception e) {  
             Log.w(TAG,"Exception caught while discovering connections - not adding connections of class "+ discoveryClassName, e);  
         }  
+    }
+  
+    /** 
+     * Creates all the required IOIO connectivity threads 
+     * @author ricky barrette 
+     */  
+    private void createAllThreads() {  
+        mThreads.clear();  
+        Collection<IOIOConnectionSpec> specs = getConnectionSpecs();  
+        for (IOIOConnectionSpec spec : specs)  
+            mThreads.add(new IOIOThread(spec.className, spec.args, this));  
+    }  
+  
+    /** 
+     * @return 
+     * @author Ytai Ben-Tsvi 
+     */  
+    private Collection<IOIOConnectionSpec> getConnectionSpecs() {  
+        Collection<IOIOConnectionSpec> result = new LinkedList<IOIOConnectionSpec>();  
+        addConnectionSpecs(SocketIOIOConnectionDiscovery.class.getName(),result);  
+        addConnectionSpecs(BluetoothIOIOConnectionDiscovery.class.getName(), result);  
+        return result;  
+    }  
+  
+    /**
+     * @return true is the stat led is enabled
+     * @author ricky barrette
+     */
+    public boolean isStatLedEnabled() {  
+        for(IOIOThread thread : mThreads)  
+            if(thread.isConnected())
+            	return thread.isStatLedEnabled();
+        return false;
+    }  
+  
+    /** 
+     * Joins all the threads 
+     * @throws InterruptedException 
+     * @author ricky barrette 
+     */  
+    private void joinAllThreads() throws InterruptedException {  
+        for (IOIOThread thread : mThreads)  
+            thread.join();  
     }  
   
     /** 
@@ -127,6 +128,16 @@ public abstract class IOIOManager implements IOIOListener{
     public void setUpdateInverval(long ms){  
         for(IOIOThread thread : mThreads)  
             thread.setUpdateInverval(ms);  
+    }  
+  
+    /** 
+     * Starts IOIO connectivity threads 
+     * @author ricky barrette 
+     */  
+    public void start() {  
+        createAllThreads();  
+        for (IOIOThread thread : mThreads)  
+            thread.start();  
     }  
   
 }  

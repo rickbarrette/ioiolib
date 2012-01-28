@@ -50,6 +50,7 @@ public class IOIOThread extends Thread{
 	private IOIOListener mListener;
 	private String mClassName;
 	private Object[] mArgs;
+	private boolean isConnected;
     
     public IOIOThread(IOIOListener listener){
     	super();
@@ -70,20 +71,28 @@ public class IOIOThread extends Thread{
      * the case of abortion happening before the IOIO instance is created or 
      * during its creation. 
      */  
-    synchronized public void abort() {  
+    public synchronized void abort() {  
         isAborted = true;  
         if (mIOIO != null) {  
             mIOIO.disconnect();  
         }  
     }  
   
+    /**
+     * @return true if this tread is connected to a IOIO
+     * @author ricky barrette
+     */
+	public synchronized boolean isConnected() {
+		return isConnected;
+	}  
+ 
+  
     /** 
      * @return the isStatLedEnabled 
      */  
-    public boolean isStatLedEnabled() {  
+    public synchronized boolean isStatLedEnabled() {  
         return isStatLedEnabled;  
     }  
- 
   
     /** 
      * Thread Body 
@@ -105,7 +114,8 @@ public class IOIOThread extends Thread{
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					}
-            }  
+            }
+            isConnected = true;
             try {  
                 /* 
                  * Here we will try to connect to the IOIO board. 
@@ -130,11 +140,13 @@ public class IOIOThread extends Thread{
                 }  
             } catch (ConnectionLostException e) {  
             	mListener.onDisconnected();  
+            	isConnected = false;
             } catch (InterruptedException e) {  
             	Log.e(TAG, e.getMessage());
             	e.printStackTrace();  
                 mIOIO.disconnect();  
-                mListener.onDisconnected();  
+                mListener.onDisconnected();
+                isConnected = false;
                 break;  
             } catch (IncompatibilityException e) {
             	Log.e(TAG, e.getMessage());
@@ -142,7 +154,8 @@ public class IOIOThread extends Thread{
 			} finally {  
                 try {  
                     mIOIO.waitForDisconnect();  
-                    mListener.onDisconnected();  
+                    mListener.onDisconnected();
+                    isConnected = false;
                 } catch (InterruptedException e) {  
                 }  
             }  
@@ -155,8 +168,8 @@ public class IOIOThread extends Thread{
      */  
     public synchronized void setStatLedEnabled(boolean isStatLedEnabled) {  
         this.isStatLedEnabled = isStatLedEnabled;  
-    }  
-  
+    }
+
     /** 
      * Sets the update interval of the IOIO thread 
      * @param ms 
