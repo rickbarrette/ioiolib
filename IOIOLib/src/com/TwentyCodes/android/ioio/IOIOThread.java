@@ -21,10 +21,12 @@
  */  
 package com.TwentyCodes.android.ioio;  
   
+import android.util.Log;
 import ioio.lib.api.DigitalOutput;  
 import ioio.lib.api.IOIO;  
 import ioio.lib.api.IOIOFactory;  
 import ioio.lib.api.exception.ConnectionLostException;  
+import ioio.lib.api.exception.IncompatibilityException;
   
 /** 
  * This is the thread that maintains the IOIO interaction. 
@@ -40,7 +42,8 @@ import ioio.lib.api.exception.ConnectionLostException;
  */  
 public class IOIOThread extends Thread{  
   
-    private IOIO mIOIO;  
+    private static final String TAG = "IOIOThread";
+	private IOIO mIOIO;  
     private boolean isAborted = false;  
     private long mUpdateInterval = 10;  
     private boolean isStatLedEnabled = false;
@@ -127,12 +130,16 @@ public class IOIOThread extends Thread{
                 }  
             } catch (ConnectionLostException e) {  
             	mListener.onDisconnected();  
-            } catch (Exception e) {  
-                e.printStackTrace();  
+            } catch (InterruptedException e) {  
+            	Log.e(TAG, e.getMessage());
+            	e.printStackTrace();  
                 mIOIO.disconnect();  
                 mListener.onDisconnected();  
                 break;  
-            } finally {  
+            } catch (IncompatibilityException e) {
+            	Log.e(TAG, e.getMessage());
+				e.printStackTrace();
+			} finally {  
                 try {  
                     mIOIO.waitForDisconnect();  
                     mListener.onDisconnected();  

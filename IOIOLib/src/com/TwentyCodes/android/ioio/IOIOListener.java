@@ -42,7 +42,7 @@ public interface IOIOListener {
 	 * Here you want to update the ports
 	 * @author ricky barrette
 	 */
-	public void loop() throws ConnectionLostException;
+	public void loop() throws ConnectionLostException, InterruptedException;
 	
 	/**
 	 * Called when the IOIO is disconnected.
