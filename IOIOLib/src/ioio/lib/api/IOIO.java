@@ -110,6 +110,20 @@ public interface IOIO {
 	}
 
 	/**
+	 * A state of a IOIO instance.
+	 */
+	public enum State {
+		/** Connection not yet established. */
+		INIT,
+		/** Connected. */
+		CONNECTED,
+		/** Connection established, incompatible firmware detected. */
+		INCOMPATIBLE,
+		/** Disconnected. Instance is useless. */
+		DEAD
+	}
+
+	/**
 	 * Establishes connection with the IOIO board.
 	 * <p>
 	 * This method is blocking until connection is established. This method can
@@ -156,6 +170,13 @@ public interface IOIO {
 	 * @see #waitForConnect()
 	 */
 	public void waitForDisconnect() throws InterruptedException;
+
+	/**
+	 * Gets the connections state.
+	 * 
+	 * @return The connection state.
+	 */
+	public State getState();
 
 	/**
 	 * Resets the entire state (returning to initial state), without dropping
@@ -420,7 +441,8 @@ public interface IOIO {
 	 * with the given mode.
 	 * 
 	 * @see #openPulseInput(ioio.lib.api.DigitalInput.Spec,
-	 *      ioio.lib.api.PulseInput.ClockRate, PulseMode, boolean)
+	 *      ioio.lib.api.PulseInput.ClockRate,
+	 *      ioio.lib.api.PulseInput.PulseMode, boolean)
 	 */
 	public PulseInput openPulseInput(int pin, PulseMode mode)
 			throws ConnectionLostException;
@@ -478,12 +500,12 @@ public interface IOIO {
 
 	/**
 	 * Shorthand for
-	 * {@link #openUart(ioio.lib.api.DigitalInput.Spec, ioio.lib.api.DigitalOutput.Spec, int, Parity, StopBits)}
+	 * {@link #openUart(DigitalInput.Spec, DigitalOutput.Spec, int, Uart.Parity, Uart.StopBits)}
 	 * , where the input pins use their default specs. {@link #INVALID_PIN} can
 	 * be used on either pin if a TX- or RX-only UART is needed.
 	 * 
-	 * @see #openUart(ioio.lib.api.DigitalInput.Spec,
-	 *      ioio.lib.api.DigitalOutput.Spec, int, Parity, StopBits)
+	 * @see #openUart(DigitalInput.Spec, DigitalOutput.Spec, int, Uart.Parity,
+	 *      Uart.StopBits)
 	 */
 	public Uart openUart(int rx, int tx, int baud, Parity parity,
 			StopBits stopbits) throws ConnectionLostException;
@@ -552,9 +574,12 @@ public interface IOIO {
 			DigitalOutput.Spec[] slaveSelect, SpiMaster.Config config)
 			throws ConnectionLostException;
 
-/**
-	 * Shorthand for {@link #openSpiMaster(ioio.lib.api.DigitalInput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config),
-	 * where the pins are all open with the default modes and default configuration values are used.
+	/**
+	 * Shorthand for
+	 * {@link #openSpiMaster(ioio.lib.api.DigitalInput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)}
+	 * , where the pins are all open with the default modes and default
+	 * configuration values are used.
+	 * 
 	 * @see #openSpiMaster(ioio.lib.api.DigitalInput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)
@@ -564,10 +589,12 @@ public interface IOIO {
 			throws ConnectionLostException;
 
 	/**
-	 * Shorthand for {@link #openSpiMaster(ioio.lib.api.DigitalInput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config),
-	 * where the MISO pins is opened with pull up, and the other pins are open
-	 * with the default modes and default configuration values are used.
-	 * In this version, a single slave is used.
+	 * Shorthand for
+	 * {@link #openSpiMaster(ioio.lib.api.DigitalInput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)}
+	 * , where the MISO pins is opened with pull up, and the other pins are open
+	 * with the default modes and default configuration values are used. In this
+	 * version, a single slave is used.
+	 * 
 	 * @see #openSpiMaster(ioio.lib.api.DigitalInput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)
@@ -635,4 +662,35 @@ public interface IOIO {
 	 *             method.
 	 */
 	public IcspMaster openIcspMaster() throws ConnectionLostException;
+
+	/**
+	 * Start a batch of operations. This is strictly an optimization and will
+	 * not change functionality: if the client knows that a sequence of several
+	 * IOIO operations are going to be performed immediately following each
+	 * other, a call to {@link #beginBatch()} before the sequence and
+	 * {@link #endBatch()} after the sequence will cause the operations to be
+	 * grouped into one transfer to the IOIO, thus reducing latency. A matching
+	 * {@link #endBatch()} operation must always follow, or otherwise no
+	 * operation will ever be actually executed. {@link #beginBatch()} /
+	 * {@link #endBatch()} blocks may be nested - the transfer will occur when
+	 * the outermost {@link #endBatch()} is invoked. Note that it is not
+	 * guaranteed that no transfers will happen while inside a batch - it should
+	 * be treated as a hint. Code running inside the block must be quick as it
+	 * blocks <b>all</b> transfers to the IOIO, including those performed from
+	 * other threads.
+	 * 
+	 * @throws ConnectionLostException
+	 *             Connection was lost before or during the execution of this
+	 *             method.
+	 */
+	public void beginBatch() throws ConnectionLostException;
+
+	/**
+	 * End a batch of operations. For explanation, see {@link #beginBatch()}.
+	 * 
+	 * @throws ConnectionLostException
+	 *             Connection was lost before or during the execution of this
+	 *             method.
+	 */
+	public void endBatch() throws ConnectionLostException;
 }

@@ -32,7 +32,7 @@ import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.impl.IncomingState.DisconnectListener;
 import ioio.lib.api.Closeable;
 
-public class AbstractResource implements Closeable, DisconnectListener {
+class AbstractResource implements Closeable, DisconnectListener {
 	enum State {
 		OPEN,
 		CLOSED,
@@ -53,6 +53,7 @@ public class AbstractResource implements Closeable, DisconnectListener {
 		}
 	}
 
+	@Override
 	synchronized public void close() {
 		if (state_ == State.CLOSED) {
 			throw new IllegalStateException("Trying to use a closed resouce");

@@ -40,7 +40,7 @@ import java.io.OutputStream;
 
 import android.util.Log;
 
-public class UartImpl extends AbstractResource implements DataModuleListener, Sender, Uart {
+class UartImpl extends AbstractResource implements DataModuleListener, Sender, Uart {
 	private static final int MAX_PACKET = 64;
 	
 	private final int uartNum_;
@@ -87,7 +87,8 @@ public class UartImpl extends AbstractResource implements DataModuleListener, Se
 	@Override
 	synchronized public void disconnected() {
 		super.disconnected();
-		outgoing_.kill();
+		incoming_.kill();
+		outgoing_.close();
 	}
 
 	@Override

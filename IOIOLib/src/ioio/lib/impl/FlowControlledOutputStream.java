@@ -33,7 +33,7 @@ import java.io.OutputStream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-public class FlowControlledOutputStream extends OutputStream {
+class FlowControlledOutputStream extends OutputStream {
 	interface Sender {
 		void send(byte[] data, int size);
 	}
@@ -91,12 +91,11 @@ public class FlowControlledOutputStream extends OutputStream {
 
 	@Override
 	synchronized public void close() {
+		if (closed_) {
+			return;
+		}
 		closed_ = true;
 		notifyAll();
-		thread_.interrupt();
-	}
-
-	synchronized public void kill() {
 		thread_.interrupt();
 	}
 

@@ -28,7 +28,6 @@
  */
 package ioio.lib.api;
 
-import ioio.lib.api.DigitalInput.Spec;
 import ioio.lib.api.exception.ConnectionLostException;
 
 import java.io.InputStream;
@@ -41,7 +40,7 @@ import java.io.OutputStream;
  * asynchronous point-to-point data transfer. It typically serves for opening
  * consoles or as a basis for higher-level protocols, such as MIDI, RS-232 and
  * RS-485. Uart instances are obtained by calling
- * {@link IOIO#openUart(Spec, ioio.lib.api.DigitalOutput.Spec, int, Parity, StopBits)}.
+ * {@link IOIO#openUart(DigitalInput.Spec, DigitalOutput.Spec, int, Uart.Parity, Uart.StopBits)}.
  * <p>
  * The UART protocol is completely symmetric - there is no "master" and "slave"
  * at this layer. Each end may send any number of bytes at arbitrary times,
@@ -70,8 +69,8 @@ import java.io.OutputStream;
  * uart.close();  // free UART module and pins
  * </pre>
  * 
- * @see IOIO#openUart(Spec, ioio.lib.api.DigitalOutput.Spec, int, Parity,
- *      StopBits)
+ * @see IOIO#openUart(DigitalInput.Spec, DigitalOutput.Spec, int, Uart.Parity,
+ *      Uart.StopBits)
  */
 public interface Uart extends Closeable {
 	/** Parity-bit mode. */

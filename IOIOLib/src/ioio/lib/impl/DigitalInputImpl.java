@@ -34,7 +34,7 @@ import ioio.lib.impl.IncomingState.InputPinListener;
 
 import java.io.IOException;
 
-public class DigitalInputImpl extends AbstractPin implements DigitalInput,
+class DigitalInputImpl extends AbstractPin implements DigitalInput,
 		InputPinListener {
 	private boolean value_;
 	private boolean valid_ = false;
@@ -54,6 +54,7 @@ public class DigitalInputImpl extends AbstractPin implements DigitalInput,
 		notifyAll();
 	}
 
+	@Override
 	synchronized public void waitForValue(boolean value)
 			throws InterruptedException, ConnectionLostException {
 		checkState();
