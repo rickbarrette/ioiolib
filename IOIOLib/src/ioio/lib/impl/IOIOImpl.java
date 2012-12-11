@@ -271,7 +271,7 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 			} else {
 				incapAllocatorSingle_.releaseModule(incapNum);
 			}
-			protocol_.incapClose(incapNum);
+			protocol_.incapClose(incapNum, doublePrecision);
 		} catch (IOException e) {
 		} catch (ConnectionLostException e) {
 		}
@@ -311,7 +311,7 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 		case APP_FIRMWARE_VER:
 			return incomingState_.firmwareId_;
 		case IOIOLIB_VER:
-			return "IOIO0322";
+			return "IOIO0326";
 		}
 		return null;
 	}
